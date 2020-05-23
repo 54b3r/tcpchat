@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+var (
+	// Log Messages with formating
+	logSrvProto      string = "[INFO]: no CHAT_PROTOCOL supplied, defaulting to tcp"
+	logSrvPort       string = "[ERROR]: CHAT_PORT environment variable has not been exported, please export to start the server properly"
+	logSrvClient     string = "[INFO]: New client has joined %s:%s"
+	logSrvJoin       string = "[INFO]: %s:%s has joined %s"
+	logSrvEXIT       string = "[INFO]: %s:%s has exited %s"
+	logSrvDISCONNECT string = "[INFO]: Client %s has disconnected from the server, closing connection"
+)
+
 // Server represents the data structure for the chat server
 type Server struct {
 	Rooms    map[string]*Room
@@ -21,12 +31,14 @@ func NewServer() *Server {
 	proto := os.Getenv("CHAT_PROTOCOL")
 
 	if port == "" {
-		Logger(true, "[ERROR]: CHAT_PORT environment variable has not been exported, please export to start the server properly", nil)
+		// Logger(true, "[ERROR]: CHAT_PORT environment variable has not been exported, please export to start the server properly", nil)
+		Logger(true, logSrvPort, nil)
 		os.Exit(1)
 	}
 
 	if proto == "" {
-		Logger(false, "[INFO]: no CHAT_PROTOCOL supplied, defaulting to tcp", nil)
+		// Logger(false, "[INFO]: no CHAT_PROTOCOL supplied, defaulting to tcp", nil)
+		Logger(false, logSrvProto, nil)
 		proto = "tcp"
 	}
 
@@ -75,8 +87,8 @@ func (s *Server) NewClient(conn net.Conn) {
 		nick:     "anonymous",
 		commands: s.commands,
 	}
-	// Logger(false, "[INFO]: New client has joined "+c.nick+":%s", conn.RemoteAddr().String())
-	Logger(false, "[INFO]: New client has joined %s:%s", c.nick, conn.RemoteAddr().String())
+	// Logger(false, "[INFO]: New client has joined %s:%s", c.nick, conn.RemoteAddr().String())
+	Logger(false, logSrvClient, c.nick, conn.RemoteAddr().String())
 
 	c.readInput()
 }
@@ -112,7 +124,8 @@ func (s *Server) join(c *Client, roomName string) {
 	// broadcast a message to the room notifying of user joinng the room
 	r.broadcast(c, fmt.Sprintf("%s:%s has joined the room", c.nick, c.conn.RemoteAddr()))
 	// Logger(false, "[INFO]: "+c.nick+":%s has joined "+c.room.name, c.conn.RemoteAddr())
-	Logger(false, "[INFO]: %s:%s has joined %s", c.nick, c.conn.RemoteAddr(), c.room.name)
+
+	Logger(false, logSrvJoin, c.nick, c.conn.RemoteAddr(), c.room.name)
 
 	// send message to the user welcoming to room
 	c.msg(fmt.Sprintf("welcome to %s", r.name))
@@ -137,10 +150,9 @@ func (s *Server) msg(c *Client, args []string) {
 
 // leave the chat server(close connction)
 func (s *Server) quit(c *Client) {
-
 	// get out of current room
 	s.quitCurrentRoom(c)
-	Logger(false, "[INFO]: Client %s has disconnected from the server, closing connection", c.conn.RemoteAddr().String())
+	Logger(false, logSrvDISCONNECT, c.conn.RemoteAddr().String())
 	// write goodbye message
 	c.msg("I see you want to leave this wonderous Chat server, Have a great one, and well see you back here soon!")
 	// close user connection
@@ -153,7 +165,7 @@ func (s *Server) quitCurrentRoom(c *Client) {
 		delete(s.Rooms[c.room.name].members, c.conn.RemoteAddr())
 		oldRoom.broadcast(c, fmt.Sprintf("%s has left the room", c.nick))
 		// create log message of user:client
-		Logger(false, "[INFO]: "+c.nick+":%s has left "+c.room.name, c.conn.RemoteAddr().String())
+		Logger(false, logSrvEXIT, c.nick, c.conn.RemoteAddr(), c.room.name)
 	}
 
 }
