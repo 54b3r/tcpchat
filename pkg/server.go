@@ -120,7 +120,7 @@ func (s *Server) join(c *Client, roomName string) {
 
 	// broadcast a message to the room notifying of user joinng the room
 	r.broadcast(c, fmt.Sprintf("%s:%s has joined the room", c.nick, c.conn.RemoteAddr()))
-	Logger(false, logSrvJoin, c.nick, c.conn.RemoteAddr(), c.room.name)
+	Logger(false, logSrvJoin, c.nick, c.conn.RemoteAddr().String(), c.room.name)
 
 	// send message to the user welcoming to room
 	c.msg(fmt.Sprintf("welcome to %s", r.name))
@@ -160,7 +160,7 @@ func (s *Server) quitCurrentRoom(c *Client) {
 		delete(s.Rooms[c.room.name].members, c.conn.RemoteAddr())
 		oldRoom.broadcast(c, fmt.Sprintf("%s has left the room", c.nick))
 		// create log message of user:client
-		Logger(false, logSrvEXIT, c.nick, c.conn.RemoteAddr(), c.room.name)
+		Logger(false, logSrvEXIT, c.nick, c.conn.RemoteAddr().String(), c.room.name)
 	}
 
 }
