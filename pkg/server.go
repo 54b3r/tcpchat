@@ -38,18 +38,18 @@ func NewServer() *Server {
 	}
 	return server
 }
-func Logger(isFatal bool, format string, v interface{}) {
+func Logger(isFatal bool, format string, v ...interface{}) {
 	if isFatal == true {
 		if v == nil {
 			log.Fatalf(format)
 		}
-		log.Fatalf(format, v)
+		log.Fatalf(format, v...)
 
 	} else {
 		if v == nil {
 			log.Printf(format)
 		}
-		log.Printf(format, v)
+		log.Printf(format, v...)
 	}
 }
 
@@ -75,7 +75,9 @@ func (s *Server) NewClient(conn net.Conn) {
 		nick:     "anonymous",
 		commands: s.commands,
 	}
-	Logger(false, "[INFO]: New client has joined "+c.nick+":%s", conn.RemoteAddr().String())
+	// Logger(false, "[INFO]: New client has joined "+c.nick+":%s", conn.RemoteAddr().String())
+	Logger(false, "[INFO]: New client has joined %s:%s", c.nick, conn.RemoteAddr().String())
+
 	c.readInput()
 }
 
@@ -108,8 +110,9 @@ func (s *Server) join(c *Client, roomName string) {
 	c.room = r
 
 	// broadcast a message to the room notifying of user joinng the room
-	r.broadcast(c, fmt.Sprintf("%s:$s has joined the room", c.nick, c.conn.RemoteAddr()))
-	Logger(false, "[INFO]: "+c.nick+":%s has joined "+c.room.name, c.conn.RemoteAddr())
+	r.broadcast(c, fmt.Sprintf("%s:%s has joined the room", c.nick, c.conn.RemoteAddr()))
+	// Logger(false, "[INFO]: "+c.nick+":%s has joined "+c.room.name, c.conn.RemoteAddr())
+	Logger(false, "[INFO]: %s:%s has joined %s", c.nick, c.conn.RemoteAddr(), c.room.name)
 
 	// send message to the user welcoming to room
 	c.msg(fmt.Sprintf("welcome to %s", r.name))
