@@ -31,13 +31,11 @@ func NewServer() *Server {
 	proto := os.Getenv("CHAT_PROTOCOL")
 
 	if port == "" {
-		// Logger(true, "[ERROR]: CHAT_PORT environment variable has not been exported, please export to start the server properly", nil)
 		Logger(true, logSrvPort, nil)
 		os.Exit(1)
 	}
 
 	if proto == "" {
-		// Logger(false, "[INFO]: no CHAT_PROTOCOL supplied, defaulting to tcp", nil)
 		Logger(false, logSrvProto, nil)
 		proto = "tcp"
 	}
@@ -87,7 +85,6 @@ func (s *Server) NewClient(conn net.Conn) {
 		nick:     "anonymous",
 		commands: s.commands,
 	}
-	// Logger(false, "[INFO]: New client has joined %s:%s", c.nick, conn.RemoteAddr().String())
 	Logger(false, logSrvClient, c.nick, conn.RemoteAddr().String())
 
 	c.readInput()
@@ -123,8 +120,6 @@ func (s *Server) join(c *Client, roomName string) {
 
 	// broadcast a message to the room notifying of user joinng the room
 	r.broadcast(c, fmt.Sprintf("%s:%s has joined the room", c.nick, c.conn.RemoteAddr()))
-	// Logger(false, "[INFO]: "+c.nick+":%s has joined "+c.room.name, c.conn.RemoteAddr())
-
 	Logger(false, logSrvJoin, c.nick, c.conn.RemoteAddr(), c.room.name)
 
 	// send message to the user welcoming to room
